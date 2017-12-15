@@ -1,9 +1,9 @@
 local awful = require("awful")
 local gears = require("gears")
-local naughty = require("naughty")
 
 local rotation = {
   inited = false,
+  display = nil,
   devices = { }
 }
 
@@ -34,7 +34,9 @@ function rotation.setKeys()
   )
 end
 
-function rotation.getDevices()
+function getDevices()
+  getScreen()
+
   local cmd = "cat /proc/bus/input/devices | grep -i name"
   awful.spawn.easy_async_with_shell(cmd, function(stdout, stderr)
     local rows = splitString(stdout, "\n")
@@ -43,6 +45,17 @@ function rotation.getDevices()
       if device:find("Touchpad") or device:find("Touchscreen") then
         table.insert(rotation.devices, device)
       end
+    end
+  end)
+end
+
+function getScreen()
+  local cmd = "xrandr --current | grep primary | awk '{print $1}'"
+  awful.spawn.easy_async_with_shell(cmd, function(stdout, stderr)
+    if #stderr > 0 then
+      naughty.notify({ title = "Screenrotator", text = "xrandr: command not found" })
+    else
+      rotation.display = stdout
     end
   end)
 end
@@ -62,6 +75,6 @@ function splitString(str, sep)
   return fields
 end
 
-rotation.getDevices()
+getDevices()
 return rotation
 
