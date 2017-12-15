@@ -21,19 +21,6 @@ function init(disableKeys)
   end
 end
 
-function rotation.setKeys()
-  globalkeys = gears.table.join(globalkeys,
-    awful.key({ super }, "Up", function() rotation.rotate("normal") end,
-      {description = "Normal tag rotation", group = "tag"}),
-    awful.key({ super }, "Down", function() rotation.rotate("inverted") end,
-      {description = "Inverted tag rotation", group = "tag"}),
-    awful.key({ super }, "Left", function() rotation.rotate("left") end,
-      {description = "Counter-clockwise tag rotation", group = "tag"}),
-    awful.key({ super }, "Right", function() rotation.rotate("right") end,
-      {description = "Clockwise tag rotation", group = "tag"})
-  )
-end
-
 function getDevices()
   getScreen()
 
@@ -53,7 +40,10 @@ function getScreen()
   local cmd = "xrandr --current | grep primary | awk '{print $1}'"
   awful.spawn.easy_async_with_shell(cmd, function(stdout, stderr)
     if #stderr > 0 then
-      naughty.notify({ title = "Screenrotator", text = "xrandr: command not found" })
+      naughty.notify({
+        title = "Screenrotator",
+        text = "xrandr: command not found"
+      })
     else
       rotation.display = stdout
     end
@@ -64,7 +54,24 @@ function rotation.rotate(rotationString)
   if not rotation.inited then init() end
 
   awful.screen.focused().selected_tag.rotation = rotationString
-  awful.spawn("rotate_desktop " .. rotationString)
+  awful.spawn("xrandr --output " .. rotation.display
+              .. " --rotate " .. rotationString)
+  rotateInput(rotationString)
+end
+
+function rotateInput(rotationString)
+  local rotationMatrices = {
+    normal = "1 0 0 0 1 0 0 0 1",
+    inverted = "-1 0 1 0 -1 1 0 0 1",
+    left = "0 -1 1 1 0 0 0 0 1",
+    right = "0 1 0 -1 0 1 0 0 1",
+  }
+  for _, v in pairs(rotation.devices) do
+    local cmd = "xinput set-prop \"" .. v
+      .. "\" \"Coordinate Transformation Matrix\" "
+      .. rotationMatrices[rotationString]
+    awful.spawn(cmd)
+  end
 end
 
 function splitString(str, sep)
