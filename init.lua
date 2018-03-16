@@ -2,7 +2,7 @@ local awful = require("awful")
 local gears = require("gears")
 
 local display = next(screen.primary.outputs)
-local devices = nil
+local devices = { }
 local previousRotation = nil
 
 local rotationMatrices = {
@@ -13,7 +13,7 @@ local rotationMatrices = {
 }
 
 local function rotateInput(rotationString)
-  for v in devices do
+  for _, v in ipairs(devices) do
     local cmd = "xinput set-prop '" .. v
       .. "' 'Coordinate Transformation Matrix' "
       .. rotationMatrices[rotationString]
@@ -30,9 +30,11 @@ end
 
 awful.spawn.easy_async("xinput --list --name-only", function(stdout)
   local rows = gears.string.split(stdout, "\n")
-  devices = gears.table.iterate(rows, function(device)
-    return device:find("Touchpad") or device:find("Touchscreen")
-  end)
+  for _, device in ipairs(rows) do
+    if device:find("Touchpad") or device:find("Touchscreen") then
+      table.insert(devices, device)
+    end
+  end
 end)
 
 tag.connect_signal("property::selected", function(t) 
