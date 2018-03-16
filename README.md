@@ -9,7 +9,7 @@ git clone https://github.com/raksooo/screenrotation.git ~/.config/awesome/screen
 ## Usage
 Import:
 ```lua
-local rotation = require('screenrotation')
+local rotate = require('screenrotation')
 ```
 
 Set globalkeys:
@@ -17,30 +17,19 @@ Set globalkeys:
 globalkeys = gears.table.join(
   ...
 
-  awful.key({ super }, "Up", function() rotation.rotate("normal") end,
+  awful.key({ super }, "Up", function() rotate("normal") end,
     {description = "Normal tag rotation", group = "tag"}),
-  awful.key({ super }, "Down", function() rotation.rotate("inverted") end,
+  awful.key({ super }, "Down", function() rotate("inverted") end,
     {description = "Inverted tag rotation", group = "tag"}),
-  awful.key({ super }, "Left", function() rotation.rotate("left") end,
+  awful.key({ super }, "Left", function() rotate("left") end,
     {description = "Counter-clockwise tag rotation", group = "tag"}),
-  awful.key({ super }, "Right", function() rotation.rotate("right") end,
+  awful.key({ super }, "Right", function() rotate("right") end,
     {description = "Clockwise tag rotation", group = "tag"})
 )
-```
-
-### Specify display
-If this script does not find a display or if it chooses the wrong one it can be changed using `rotation.display` property.
-```lua
-rotation.display = "HDMI-2"
-```
-
-### Specify devices
-If this script does not find your input devices or chooses the wrong ones the table `rotation.devices` can be modified to include the correct ones.
-```lua
-table.insert(rotation.devices, "ELAN Touchscreen")
 ```
 
 ## Dependencies
 * Awesome wm
 * xrandr
+* xinput
 
